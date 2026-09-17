@@ -1,5 +1,7 @@
 <script setup>
 import { computed, ref } from 'vue'
+import TodoFilter from './components/TodoFilter.vue'
+import TodoItem from './components/TodoItem.vue'
 
 const learnerName = ref('Vue learner')
 const count = ref(0)
@@ -10,15 +12,37 @@ const progressMessage = computed(() => {
   return `You have clicked ${count.value} times.`
 })
 
-
 const newTodo = ref('')
 const todos = ref([
   { id: 1, text: 'Learn v-for', completed: true },
   { id: 2, text: 'Practice v-model', completed: false },
 ])
 
-
 const remainingTodos = computed(() => todos.value.filter((todo) => !todo.completed).length)
+
+function addTodo() {
+  const text = newTodo.value.trim()
+  if (!text) return
+
+  todos.value.push({
+    id: Date.now(),
+    text,
+    completed: false,
+  })
+
+  newTodo.value = ''
+}
+
+function toggleTodo(todoId) {
+  todos.value = todos.value.map((todo) =>
+    todo.id === todoId ? { ...todo, completed: !todo.completed } : todo,
+  )
+}
+
+function removeTodo(todoId) {
+  todos.value = todos.value.filter((todo) => todo.id !== todoId)
+}
+
 const todoFilter = ref('all')
 
 const visibleTodos = computed(() => {
@@ -26,21 +50,6 @@ const visibleTodos = computed(() => {
   if (todoFilter.value === 'done') return todos.value.filter((todo) => todo.completed)
   return todos.value
 })
-
-function addTodo() {
-  const text = newTodo.value.trim()
-  if (!text) return
-  todos.value.push({
-    id: Date.now(),
-    text,
-    completed: false,
-  })
-  newTodo.value = ''
-}
-
-function removeTodo(todoId) {
-  todos.value = todos.value.filter((todo) => todo.id !== todoId)
-}
 </script>
 
 <template>
@@ -149,26 +158,16 @@ function removeTodo(todoId) {
         value derives a new list from your todos and updates when their state changes.
       </p>
 
-      <div class="mt-6 flex flex-wrap gap-2" aria-label="Filter todos">
-        <button
-          v-for="filter in ['all', 'active', 'done']"
-          :key="filter"
-          class="rounded border px-3 py-2 text-sm font-bold capitalize transition-colors"
-          :class="todoFilter === filter ? 'border-[#bd5d38] bg-[#bd5d38] text-[#fffdf8]' : 'border-[#c6bbaa] bg-[#fffdf8] text-[#526057] hover:border-[#bd5d38]'"
-          type="button"
-          @click="todoFilter = filter"
-        >
-          {{ filter }}
-        </button>
-      </div>
+      <TodoFilter v-model="todoFilter" />
 
       <ul class="mt-5 divide-y divide-[#d8cdbd]" aria-live="polite">
-        <li v-for="todo in visibleTodos" :key="todo.id" class="flex items-center gap-3 py-3 text-[#526057]">
-          <span :class="todo.completed ? 'text-[#9aa39b] line-through' : ''" class="flex-1">{{ todo.text }}</span>
-          <span class="text-xs font-bold uppercase tracking-[0.1em] text-[#8d462c]">
-            {{ todo.completed ? 'done' : 'active' }}
-          </span>
-        </li>
+        <TodoItem
+          v-for="todo in visibleTodos"
+          :key="todo.id"
+          :todo="todo"
+          @toggle="toggleTodo"
+          @remove="removeTodo"
+        />
         <li v-if="visibleTodos.length === 0" class="py-3 text-[#68756c]">Nothing here yet.</li>
       </ul>
     </section>
