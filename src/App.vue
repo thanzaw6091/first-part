@@ -1,10 +1,21 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, onMounted, onUnmounted, onUpdated, ref, watch } from 'vue'
 import TodoFilter from './components/TodoFilter.vue'
 import TodoItem from './components/TodoItem.vue'
 
+const STORAGE_KEY = 'vue-beginner-todos'
+
 const learnerName = ref('Vue learner')
 const count = ref(0)
+
+const readStoredTodos = () => {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY)
+    return saved ? JSON.parse(saved) : []
+  } catch {
+    return []
+  }
+}
 
 const progressMessage = computed(() => {
   if (count.value === 0) return 'Click the button to start practicing.'
@@ -13,16 +24,53 @@ const progressMessage = computed(() => {
 })
 
 const newTodo = ref('')
-const todos = ref([
-  { id: 1, text: 'Learn v-for', completed: true },
-  { id: 2, text: 'Practice v-model', completed: false },
-])
+const todoError = ref('')
+const todos = ref([])
+const timerCount = ref(0)
+let timerId = null
+
+onMounted(() => {
+  todos.value = readStoredTodos()
+  timerId = setInterval(() => {
+    timerCount.value += 1
+  }, 1000)
+  console.log('Component mounted and timer started.')
+})
+
+onUpdated(() => {
+  console.log('Component updated and timerCount is now:', timerCount.value)
+})
+
+onUnmounted(() => {
+  console.log('Component unmounted and timer stopped.')
+  if (timerId) {
+    clearInterval(timerId)
+  }
+})
+
+watch(
+  todos,
+  (newTodos) => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(newTodos))
+  },
+  { deep: true },
+)
 
 const remainingTodos = computed(() => todos.value.filter((todo) => !todo.completed).length)
 
 function addTodo() {
   const text = newTodo.value.trim()
-  if (!text) return
+  todoError.value = ''
+
+  if (!text) {
+    todoError.value = 'Please enter a task.'
+    return
+  }
+
+  if (text.length > 80) {
+    todoError.value = 'Task must be 80 characters or fewer.'
+    return
+  }
 
   todos.value.push({
     id: Date.now(),
@@ -123,6 +171,12 @@ const visibleTodos = computed(() => {
         <strong class="text-sm text-[#526057]">{{ remainingTodos }} remaining</strong>
       </div>
 
+      <p class="mt-3 text-sm text-[#68756c]">
+        Saved automatically with <code class="rounded bg-[#f1e6d5] px-1.5 py-0.5 font-mono text-[0.9em] text-[#8d462c]">watch()</code>
+        and <code class="rounded bg-[#f1e6d5] px-1.5 py-0.5 font-mono text-[0.9em] text-[#8d462c]">localStorage</code>.
+        <span class="mt-1 block text-[#526057]">Lesson: <code class="rounded bg-[#f1e6d5] px-1.5 py-0.5 font-mono text-[0.9em] text-[#8d462c]">onMounted()</code> loads data when the component starts.</span>
+      </p>
+
       <form class="mt-6 flex flex-col gap-2 sm:flex-row" @submit.prevent="addTodo">
         <input
           v-model="newTodo"
@@ -130,11 +184,16 @@ const visibleTodos = computed(() => {
           type="text"
           placeholder="What will you practice?"
           aria-label="New todo"
+          :aria-invalid="Boolean(todoError)"
+          :aria-describedby="todoError ? 'todo-error' : undefined"
         />
         <button class="rounded bg-[#bd5d38] px-4 py-3 font-bold text-[#fffdf8] hover:bg-[#99462d]" type="submit">
           Add task
         </button>
       </form>
+      <p v-if="todoError" class="mt-2 text-sm font-bold text-[#a3482c]" role="alert">
+        {{ todoError }}
+      </p>
 
       <ul class="mt-5 divide-y divide-[#e7e0d2]">
         <li v-for="todo in todos" :key="todo.id" class="flex items-center gap-3 py-3">
@@ -170,6 +229,18 @@ const visibleTodos = computed(() => {
         />
         <li v-if="visibleTodos.length === 0" class="py-3 text-[#68756c]">Nothing here yet.</li>
       </ul>
+    </section>
+
+    <section class="mx-auto mt-5 max-w-[980px] rounded-lg border border-[#d8d1c2] bg-[#f7f1e6] p-7 shadow-[8px_8px_0_#ded5c4]" aria-labelledby="lifecycle-title">
+      <span class="mb-8 block text-xs font-bold uppercase tracking-[0.12em] text-[#bd5d38]">05</span>
+      <h2 id="lifecycle-title" class="font-display text-2xl font-semibold tracking-[-0.04em]">Lifecycle hook practice</h2>
+      <p class="mt-2 leading-relaxed text-[#68756c]">
+        This timer starts when the component mounts, updates while it runs, and stops when the component unmounts.
+      </p>
+      <div class="mt-5 rounded border border-[#d8cdbd] bg-[#fffdf8] p-4">
+        <p class="text-sm font-bold uppercase tracking-[0.12em] text-[#bd5d38]">Timer</p>
+        <strong class="mt-2 block font-display text-5xl leading-none text-[#17221d]">{{ timerCount }}s</strong>
+      </div>
     </section>
 
     <p class="mx-auto mt-11 max-w-[980px] text-center text-[#68756c]">
