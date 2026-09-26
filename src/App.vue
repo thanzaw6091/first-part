@@ -1,9 +1,13 @@
 <script setup>
 import { computed, onMounted, onUnmounted, onUpdated, ref, watch } from 'vue'
+import { RouterLink, RouterView, useRoute } from 'vue-router'
+import LessonCard from './components/LessonCard.vue'
 import TodoFilter from './components/TodoFilter.vue'
 import TodoItem from './components/TodoItem.vue'
 
 const STORAGE_KEY = 'vue-beginner-todos'
+const route = useRoute()
+const isTodosPage = computed(() => route.path === '/todos')
 
 const learnerName = ref('Vue learner')
 const count = ref(0)
@@ -102,8 +106,16 @@ const visibleTodos = computed(() => {
 
 <template>
   <main class="min-h-screen bg-[#f5f1e8] px-5 py-12 text-[#17221d] sm:py-[72px]">
-    <section class="mx-auto mb-8 max-w-[980px] sm:mb-12">
-      <p class="mb-4 text-xs font-bold uppercase tracking-[0.12em] text-[#bd5d38]">
+    <nav class="mx-auto mb-8 flex max-w-[980px] gap-3 rounded-lg border border-[#d8d1c2] bg-[#fffdf8] p-3 shadow-[8px_8px_0_#ded5c4]">
+      <RouterLink class="rounded px-4 py-2 font-bold text-[#526057] hover:bg-[#f4e8d7]" to="/">Home</RouterLink>
+      <RouterLink class="rounded px-4 py-2 font-bold text-[#526057] hover:bg-[#f4e8d7]" to="/about">About</RouterLink>
+      <RouterLink class="rounded px-4 py-2 font-bold text-[#526057] hover:bg-[#f4e8d7]" to="/todos">Todos</RouterLink>
+    </nav>
+
+    <RouterView v-if="!isTodosPage" />
+
+    <section v-if="!isTodosPage" class=" mt-4  mx-auto mb-8 max-w-[980px] sm:mb-12">
+      <p class=" mb-4 text-xs font-bold uppercase tracking-[0.12em] text-[#bd5d38]">
         Vue.js beginner playground
       </p>
       <h1 class="max-w-[650px] font-display text-5xl font-bold leading-[0.98] tracking-[-0.06em] sm:text-7xl">
@@ -114,7 +126,7 @@ const visibleTodos = computed(() => {
       </p>
     </section>
 
-    <section class="mx-auto grid max-w-[980px] gap-5 md:grid-cols-2" aria-label="Vue practice examples">
+    <section v-if="!isTodosPage" class="mx-auto grid max-w-[980px] gap-5 md:grid-cols-2" aria-label="Vue practice examples">
       <article class="min-h-[360px] rounded-lg border border-[#d8d1c2] bg-[#fffdf8] p-7 shadow-[8px_8px_0_#ded5c4]">
         <span class="mb-8 block text-xs font-bold uppercase tracking-[0.12em] text-[#bd5d38] sm:mb-12">01</span>
         <h2 class="font-display text-2xl font-semibold tracking-[-0.04em]">Reactive input</h2>
@@ -156,7 +168,7 @@ const visibleTodos = computed(() => {
         <p class="mt-5 text-sm leading-relaxed text-[#68756c]" aria-live="polite">{{ progressMessage }}</p>
       </article>
     </section>
-
+    
     <section class="mx-auto mt-5 max-w-[980px] rounded-lg border border-[#d8d1c2] bg-[#fffdf8] p-7 shadow-[8px_8px_0_#ded5c4]" aria-labelledby="todo-title">
       <div class="flex flex-wrap items-end justify-between gap-3">
         <div>
@@ -209,7 +221,7 @@ const visibleTodos = computed(() => {
       </ul>
     </section>
 
-    <section class="mx-auto mt-5 max-w-[980px] rounded-lg border border-[#d8d1c2] bg-[#e9dfd0] p-7 shadow-[8px_8px_0_#ded5c4]" aria-labelledby="computed-title">
+    <section v-if="!isTodosPage" class="mx-auto mt-5 max-w-[980px] rounded-lg border border-[#d8d1c2] bg-[#e9dfd0] p-7 shadow-[8px_8px_0_#ded5c4]" aria-labelledby="computed-title">
       <span class="mb-8 block text-xs font-bold uppercase tracking-[0.12em] text-[#bd5d38]">04</span>
       <h2 id="computed-title" class="font-display text-2xl font-semibold tracking-[-0.04em]">Computed views</h2>
       <p class="mt-2 max-w-[620px] leading-relaxed text-[#68756c]">
@@ -231,7 +243,7 @@ const visibleTodos = computed(() => {
       </ul>
     </section>
 
-    <section class="mx-auto mt-5 max-w-[980px] rounded-lg border border-[#d8d1c2] bg-[#f7f1e6] p-7 shadow-[8px_8px_0_#ded5c4]" aria-labelledby="lifecycle-title">
+    <section v-if="!isTodosPage" class="mx-auto mt-5 max-w-[980px] rounded-lg border border-[#d8d1c2] bg-[#f7f1e6] p-7 shadow-[8px_8px_0_#ded5c4]" aria-labelledby="lifecycle-title">
       <span class="mb-8 block text-xs font-bold uppercase tracking-[0.12em] text-[#bd5d38]">05</span>
       <h2 id="lifecycle-title" class="font-display text-2xl font-semibold tracking-[-0.04em]">Lifecycle hook practice</h2>
       <p class="mt-2 leading-relaxed text-[#68756c]">
@@ -243,7 +255,19 @@ const visibleTodos = computed(() => {
       </div>
     </section>
 
-    <p class="mx-auto mt-11 max-w-[980px] text-center text-[#68756c]">
+    <section v-if="!isTodosPage" class="mx-auto mt-5 max-w-[980px]" aria-labelledby="slots-title">
+      <LessonCard title="Slots: parent supplies the content">
+        <p>
+          A <code class="rounded bg-[#f1e6d5] px-1.5 py-0.5 font-mono text-[0.9em] text-[#8d462c]">slot</code>
+          lets a parent place its own template content inside a reusable child component.
+        </p>
+        <template #footer>
+          Parent content is rendered inside <code class="font-mono text-[#8d462c]">LessonCard.vue</code>.
+        </template>
+      </LessonCard>
+    </section>
+
+    <p v-if="!isTodosPage" class="mx-auto mt-11 max-w-[980px] text-center text-[#68756c]">
       Try changing the code in
       <code class="rounded bg-[#f1e6d5] px-1.5 py-0.5 font-mono text-[0.9em] text-[#8d462c]">src/App.vue</code>,
       then watch the browser update.
