@@ -16,6 +16,11 @@ const routes = [
     name: 'Todos',
     component: () => import('../App.vue'),
   },
+  {
+    path: '/lazy-demo',
+    name: 'Lazy Loading Demo',
+    component: () => import('../views/LazyDemoView.vue'),
+  },
 ]
 
 const router = createRouter({

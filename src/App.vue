@@ -31,10 +31,14 @@ const newTodo = ref('')
 const todoError = ref('')
 const todos = ref([])
 const timerCount = ref(0)
+const users = ref([])
+const usersLoading = ref(false)
+const usersError = ref('')
 let timerId = null
 
 onMounted(() => {
   todos.value = readStoredTodos()
+  loadUsers()
   timerId = setInterval(() => {
     timerCount.value += 1
   }, 1000)
@@ -102,6 +106,21 @@ const visibleTodos = computed(() => {
   if (todoFilter.value === 'done') return todos.value.filter((todo) => todo.completed)
   return todos.value
 })
+
+async function loadUsers() {
+  usersLoading.value = true
+  usersError.value = ''
+
+  try {
+    const response = await fetch('https://jsonplaceholder.typicode.com/users?_limit=4')
+    if (!response.ok) throw new Error(`Request failed (${response.status})`)
+    users.value = await response.json()
+  } catch {
+    usersError.value = 'Could not load users. Check your connection and try again.'
+  } finally {
+    usersLoading.value = false
+  }
+}
 </script>
 
 <template>
@@ -110,6 +129,7 @@ const visibleTodos = computed(() => {
       <RouterLink class="rounded px-4 py-2 font-bold text-[#526057] hover:bg-[#f4e8d7]" to="/">Home</RouterLink>
       <RouterLink class="rounded px-4 py-2 font-bold text-[#526057] hover:bg-[#f4e8d7]" to="/about">About</RouterLink>
       <RouterLink class="rounded px-4 py-2 font-bold text-[#526057] hover:bg-[#f4e8d7]" to="/todos">Todos</RouterLink>
+      <RouterLink class="rounded px-4 py-2 font-bold text-[#526057] hover:bg-[#f4e8d7]" to="/lazy-demo">Lazy Loading</RouterLink>
     </nav>
 
     <RouterView v-if="!isTodosPage" />
@@ -253,6 +273,29 @@ const visibleTodos = computed(() => {
         <p class="text-sm font-bold uppercase tracking-[0.12em] text-[#bd5d38]">Timer</p>
         <strong class="mt-2 block font-display text-5xl leading-none text-[#17221d]">{{ timerCount }}s</strong>
       </div>
+    </section>
+
+    <section v-if="!isTodosPage" class="mx-auto mt-5 max-w-[980px] rounded-lg border border-[#d8d1c2] bg-[#e8eee3] p-7 shadow-[8px_8px_0_#ded5c4]" aria-labelledby="api-title">
+      <span class="mb-8 block text-xs font-bold uppercase tracking-[0.12em] text-[#bd5d38]">06</span>
+      <h2 id="api-title" class="font-display text-2xl font-semibold tracking-[-0.04em]">Fetch data from an API</h2>
+      <p class="mt-2 max-w-[620px] leading-relaxed text-[#68756c]">
+        <code class="rounded bg-[#f1e6d5] px-1.5 py-0.5 font-mono text-[0.9em] text-[#8d462c]">fetch()</code>
+        requests data; the loading and error states tell the user what is happening.
+      </p>
+
+      <p v-if="usersLoading" class="mt-5 text-[#526057]" role="status">Loading users...</p>
+      <div v-else-if="usersError" class="mt-5" role="alert">
+        <p class="text-sm font-bold text-[#a3482c]">{{ usersError }}</p>
+        <button class="mt-3 rounded bg-[#bd5d38] px-4 py-2 font-bold text-[#fffdf8] hover:bg-[#99462d]" type="button" @click="loadUsers">
+          Try again
+        </button>
+      </div>
+      <ul v-else class="mt-5 divide-y divide-[#cdd8c8]">
+        <li v-for="user in users" :key="user.id" class="py-3">
+          <strong class="block text-[#17221d]">{{ user.name }}</strong>
+          <span class="text-sm text-[#68756c]">{{ user.email }}</span>
+        </li>
+      </ul>
     </section>
 
     <section v-if="!isTodosPage" class="mx-auto mt-5 max-w-[980px]" aria-labelledby="slots-title">
