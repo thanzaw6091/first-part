@@ -4,6 +4,7 @@ import { RouterLink, RouterView, useRoute } from 'vue-router'
 import LessonCard from './components/LessonCard.vue'
 import TodoFilter from './components/TodoFilter.vue'
 import TodoItem from './components/TodoItem.vue'
+import UserCard from './components/UserCard.vue'
 
 const STORAGE_KEY = 'vue-beginner-todos'
 const route = useRoute()
@@ -34,6 +35,12 @@ const timerCount = ref(0)
 const users = ref([])
 const usersLoading = ref(false)
 const usersError = ref('')
+const sampleUsers = [
+  { id: 1, name: 'Aye Aye', email: 'aye@example.com', role: 'Frontend developer' },
+  { id: 2, name: 'Kyaw Kyaw', email: 'kyaw@example.com', role: 'UI designer' },
+  { id: 3, name: 'Zaw Zaw', email: 'zaw@example.com', role: 'Backend developer' },
+]
+const selectedUser = ref(sampleUsers[0])
 let timerId = null
 
 onMounted(() => {
@@ -120,6 +127,10 @@ async function loadUsers() {
   } finally {
     usersLoading.value = false
   }
+}
+
+function chooseUser(user) {
+  selectedUser.value = user
 }
 </script>
 
@@ -296,6 +307,35 @@ async function loadUsers() {
           <span class="text-sm text-[#68756c]">{{ user.email }}</span>
         </li>
       </ul>
+    </section>
+
+    <section v-if="!isTodosPage" class="mx-auto mt-5 max-w-[980px] rounded-lg border border-[#d8d1c2] bg-[#f3e9dc] p-7 shadow-[8px_8px_0_#ded5c4]" aria-labelledby="props-title">
+      <span class="mb-8 block text-xs font-bold uppercase tracking-[0.12em] text-[#bd5d38]">07</span>
+      <h2 id="props-title" class="font-display text-2xl font-semibold tracking-[-0.04em]">Parent and child communication</h2>
+      <p class="mt-2 max-w-[620px] leading-relaxed text-[#68756c]">
+        The parent sends data with <code class="rounded bg-[#f1e6d5] px-1.5 py-0.5 font-mono text-[0.9em] text-[#8d462c]">props</code>
+        and receives events with <code class="rounded bg-[#f1e6d5] px-1.5 py-0.5 font-mono text-[0.9em] text-[#8d462c]">emit()</code>.
+      </p>
+
+      <div class="mt-6 grid gap-6 md:grid-cols-2">
+        <div class="rounded border border-[#d8cdbd] bg-[#fffdf8] p-4">
+          <h3 class="font-display text-xl font-semibold">User list</h3>
+          <ul class="mt-4 space-y-3">
+            <li v-for="user in sampleUsers" :key="user.id">
+              <button
+                class="w-full rounded border px-3 py-2 text-left font-bold transition"
+                :class="selectedUser && selectedUser.id === user.id ? 'border-[#bd5d38] bg-[#f2d8c8] text-[#17221d]' : 'border-[#d8cdbd] bg-[#f9f7f0] text-[#526057] hover:border-[#bd5d38]'"
+                type="button"
+                @click="chooseUser(user)"
+              >
+                {{ user.name }}
+              </button>
+            </li>
+          </ul>
+        </div>
+
+        <UserCard :user="selectedUser" @select-user="chooseUser" />
+      </div>
     </section>
 
     <section v-if="!isTodosPage" class="mx-auto mt-5 max-w-[980px]" aria-labelledby="slots-title">
