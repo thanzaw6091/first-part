@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, onUnmounted, onUpdated, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, onUpdated, ref, watch, watchEffect } from 'vue'
 import { RouterLink, RouterView, useRoute } from 'vue-router'
 import LessonCard from './components/LessonCard.vue'
 import TodoFilter from './components/TodoFilter.vue'
@@ -41,6 +41,13 @@ const sampleUsers = [
   { id: 3, name: 'Zaw Zaw', email: 'zaw@example.com', role: 'Backend developer' },
 ]
 const selectedUser = ref(sampleUsers[0])
+const formEmail = ref('')
+const formError = ref('')
+const submittedEmail = ref('')
+const watchedEmail = ref('')
+const watchedEmailError = ref('')
+const watchEffectEmail = ref('')
+const watchEffectStatus = ref('Type something to start.')
 let timerId = null
 
 onMounted(() => {
@@ -132,6 +139,54 @@ async function loadUsers() {
 function chooseUser(user) {
   selectedUser.value = user
 }
+
+function submitForm() {
+  const value = formEmail.value.trim()
+  formError.value = ''
+
+  if (!value) {
+    formError.value = 'Please enter your email.'
+    return
+  }
+
+  if (!value.includes('@')) {
+    formError.value = 'Please enter a valid email address.'
+    return
+  }
+
+  submittedEmail.value = value
+  formEmail.value = ''
+}
+
+watch(watchedEmail, (value) => {
+  if (!value) {
+    watchedEmailError.value = 'Email is required.'
+    return
+  }
+
+  if (!value.includes('@')) {
+    watchedEmailError.value = 'Email must contain @.'
+    return
+  }
+
+  watchedEmailError.value = ''
+})
+
+watchEffect(() => {
+  const value = watchEffectEmail.value.trim()
+
+  if (!value) {
+    watchEffectStatus.value = 'Type something to start.'
+    return
+  }
+
+  if (!value.includes('@')) {
+    watchEffectStatus.value = 'Not valid yet — add @.'
+    return
+  }
+
+  watchEffectStatus.value = 'Valid email! watchEffect is working.'
+})
 </script>
 
 <template>
@@ -335,6 +390,84 @@ function chooseUser(user) {
         </div>
 
         <UserCard :user="selectedUser" @select-user="chooseUser" />
+      </div>
+    </section>
+
+    <section v-if="!isTodosPage" class="mx-auto mt-5 max-w-[980px] rounded-lg border border-[#d8d1c2] bg-[#fefaf5] p-7 shadow-[8px_8px_0_#ded5c4]" aria-labelledby="form-title">
+      <span class="mb-8 block text-xs font-bold uppercase tracking-[0.12em] text-[#bd5d38]">08</span>
+      <h2 id="form-title" class="font-display text-2xl font-semibold tracking-[-0.04em]">Form handling with v-model</h2>
+      <p class="mt-2 leading-relaxed text-[#68756c]">
+        The input value is linked with <code class="rounded bg-[#f1e6d5] px-1.5 py-0.5 font-mono text-[0.9em] text-[#8d462c]">v-model</code>,
+        and the form validates before saving the value.
+      </p>
+
+      <form class="mt-5 max-w-[520px]" @submit.prevent="submitForm">
+        <label class="block text-sm font-bold text-[#526057]" for="lesson-email">Email</label>
+        <input
+          id="lesson-email"
+          v-model="formEmail"
+          class="mt-2 w-full rounded border border-[#bfc8bd] bg-[#f9f7f0] px-3.5 py-3 text-[#17221d] outline-none focus:border-[#bd5d38] focus:ring-4 focus:ring-[#f2d8c8]"
+          type="text"
+          placeholder="Enter your email"
+        />
+
+        <button class="mt-4 rounded bg-[#bd5d38] px-4 py-3 font-bold text-[#fffdf8] hover:bg-[#99462d]" type="submit">
+          Submit
+        </button>
+
+        <p v-if="formError" class="mt-3 text-sm font-bold text-[#a3482c]" role="alert">
+          {{ formError }}
+        </p>
+
+        <p v-if="submittedEmail" class="mt-3 text-sm font-bold text-[#526057]">
+          Submitted: {{ submittedEmail }}
+        </p>
+      </form>
+    </section>
+
+    <section v-if="!isTodosPage" class="mx-auto mt-5 max-w-[980px] rounded-lg border border-[#d8d1c2] bg-[#f9f5ef] p-7 shadow-[8px_8px_0_#ded5c4]" aria-labelledby="watch-title">
+      <span class="mb-8 block text-xs font-bold uppercase tracking-[0.12em] text-[#bd5d38]">09</span>
+      <h2 id="watch-title" class="font-display text-2xl font-semibold tracking-[-0.04em]">Watch and live validation</h2>
+      <p class="mt-2 leading-relaxed text-[#68756c]">
+        The <code class="rounded bg-[#f1e6d5] px-1.5 py-0.5 font-mono text-[0.9em] text-[#8d462c]">watch()</code> function runs
+        whenever the value changes, so you can validate while the user is typing.
+      </p>
+
+      <div class="mt-5 max-w-[520px]">
+        <label class="block text-sm font-bold text-[#526057]" for="watch-email">Live email check</label>
+        <input
+          id="watch-email"
+          v-model="watchedEmail"
+          class="mt-2 w-full rounded border border-[#bfc8bd] bg-[#f9f7f0] px-3.5 py-3 text-[#17221d] outline-none focus:border-[#bd5d38] focus:ring-4 focus:ring-[#f2d8c8]"
+          type="text"
+          placeholder="Type an email"
+        />
+        <p v-if="watchedEmailError" class="mt-3 text-sm font-bold text-[#a3482c]" role="alert">
+          {{ watchedEmailError }}
+        </p>
+      </div>
+    </section>
+
+    <section v-if="!isTodosPage" class="mx-auto mt-5 max-w-[980px] rounded-lg border border-[#d8d1c2] bg-[#eef5ee] p-7 shadow-[8px_8px_0_#ded5c4]" aria-labelledby="watch-effect-title">
+      <span class="mb-8 block text-xs font-bold uppercase tracking-[0.12em] text-[#bd5d38]">10</span>
+      <h2 id="watch-effect-title" class="font-display text-2xl font-semibold tracking-[-0.04em]">watchEffect</h2>
+      <p class="mt-2 leading-relaxed text-[#68756c]">
+        <code class="rounded bg-[#f1e6d5] px-1.5 py-0.5 font-mono text-[0.9em] text-[#8d462c]">watchEffect()</code>
+        tracks every reactive value used inside it and runs again whenever one of them changes.
+      </p>
+
+      <div class="mt-5 max-w-[520px]">
+        <label class="block text-sm font-bold text-[#526057]" for="watch-effect-email">Auto validation with watchEffect</label>
+        <input
+          id="watch-effect-email"
+          v-model="watchEffectEmail"
+          class="mt-2 w-full rounded border border-[#bfc8bd] bg-[#f9f7f0] px-3.5 py-3 text-[#17221d] outline-none focus:border-[#bd5d38] focus:ring-4 focus:ring-[#f2d8c8]"
+          type="text"
+          placeholder="Type an email"
+        />
+        <p class="mt-3 text-sm font-bold text-[#526057]" aria-live="polite">
+          {{ watchEffectStatus }}
+        </p>
       </div>
     </section>
 
