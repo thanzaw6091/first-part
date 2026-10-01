@@ -48,6 +48,47 @@ const watchedEmail = ref('')
 const watchedEmailError = ref('')
 const watchEffectEmail = ref('')
 const watchEffectStatus = ref('Type something to start.')
+const focusInputRef = ref(null)
+const focusInputValue = ref('')
+const focusInputMessage = ref('Click the button to focus the input.')
+const panelTabs = ['intro', 'skills', 'result']
+const currentPanel = ref('intro')
+const dynamicPanel = {
+  intro: {
+    name: 'IntroPanel',
+    template: `
+      <div class="rounded border border-[#d8cdbd] bg-[#fffdf8] p-4">
+        <p class="text-sm font-bold uppercase tracking-[0.12em] text-[#bd5d38]">Intro</p>
+        <h3 class="mt-2 font-display text-2xl text-[#17221d]">This is the first panel</h3>
+        <p class="mt-2 text-[#68756c]">Vue can switch the whole component body without reloading the page.</p>
+      </div>
+    `,
+  },
+  skills: {
+    name: 'SkillsPanel',
+    template: `
+      <div class="rounded border border-[#d8cdbd] bg-[#edf3e8] p-4">
+        <p class="text-sm font-bold uppercase tracking-[0.12em] text-[#bd5d38]">Skills</p>
+        <ul class="mt-3 space-y-2 text-[#526057]">
+          <li>• v-model</li>
+          <li>• computed()</li>
+          <li>• watch()</li>
+          <li>• ref()</li>
+        </ul>
+      </div>
+    `,
+  },
+  result: {
+    name: 'ResultPanel',
+    template: `
+      <div class="rounded border border-[#d8cdbd] bg-[#f4e9d8] p-4">
+        <p class="text-sm font-bold uppercase tracking-[0.12em] text-[#bd5d38]">Result</p>
+        <h3 class="mt-2 font-display text-2xl text-[#17221d]">Learning becomes easier</h3>
+        <p class="mt-2 text-[#68756c]">Dynamic components let you show different UI states in one place.</p>
+      </div>
+    `,
+  },
+}
 let timerId = null
 
 onMounted(() => {
@@ -187,6 +228,13 @@ watchEffect(() => {
 
   watchEffectStatus.value = 'Valid email! watchEffect is working.'
 })
+
+function focusInputField() {
+  focusInputRef.value?.focus()
+  focusInputMessage.value = 'The input is focused through a template ref.'
+}
+
+const currentDynamicComponent = computed(() => dynamicPanel[currentPanel.value])
 </script>
 
 <template>
@@ -468,6 +516,62 @@ watchEffect(() => {
         <p class="mt-3 text-sm font-bold text-[#526057]" aria-live="polite">
           {{ watchEffectStatus }}
         </p>
+      </div>
+    </section>
+
+    <section v-if="!isTodosPage" class="mx-auto mt-5 max-w-[980px] rounded-lg border border-[#d8d1c2] bg-[#f8f1ea] p-7 shadow-[8px_8px_0_#ded5c4]" aria-labelledby="template-ref-title">
+      <span class="mb-8 block text-xs font-bold uppercase tracking-[0.12em] text-[#bd5d38]">11</span>
+      <h2 id="template-ref-title" class="font-display text-2xl font-semibold tracking-[-0.04em]">Template refs</h2>
+      <p class="mt-2 leading-relaxed text-[#68756c]">
+        A <code class="rounded bg-[#f1e6d5] px-1.5 py-0.5 font-mono text-[0.9em] text-[#8d462c]">ref</code>
+        can also point to a real HTML element. Then you can call its built-in browser methods like <code class="rounded bg-[#f1e6d5] px-1.5 py-0.5 font-mono text-[0.9em] text-[#8d462c]">focus()</code>.
+      </p>
+
+      <div class="mt-5 max-w-[520px]">
+        <input
+          ref="focusInputRef"
+          v-model="focusInputValue"
+          class="w-full rounded border border-[#bfc8bd] bg-[#f9f7f0] px-3.5 py-3 text-[#17221d] outline-none focus:border-[#bd5d38] focus:ring-4 focus:ring-[#f2d8c8]"
+          type="text"
+          placeholder="Type something here"
+        />
+
+        <button
+          class="mt-4 rounded bg-[#bd5d38] px-4 py-3 font-bold text-[#fffdf8] hover:bg-[#99462d]"
+          type="button"
+          @click="focusInputField"
+        >
+          Focus input
+        </button>
+
+        <p class="mt-3 text-sm font-bold text-[#526057]" aria-live="polite">
+          {{ focusInputMessage }}
+        </p>
+      </div>
+    </section>
+
+    <section v-if="!isTodosPage" class="mx-auto mt-5 max-w-[980px] rounded-lg border border-[#d8d1c2] bg-[#f6efe8] p-7 shadow-[8px_8px_0_#ded5c4]" aria-labelledby="dynamic-component-title">
+      <span class="mb-8 block text-xs font-bold uppercase tracking-[0.12em] text-[#bd5d38]">12</span>
+      <h2 id="dynamic-component-title" class="font-display text-2xl font-semibold tracking-[-0.04em]">Dynamic components</h2>
+      <p class="mt-2 leading-relaxed text-[#68756c]">
+        With <code class="rounded bg-[#f1e6d5] px-1.5 py-0.5 font-mono text-[0.9em] text-[#8d462c]">:is</code>, Vue can swap one component for another based on a value.
+      </p>
+
+      <div class="mt-5 flex flex-wrap gap-2">
+        <button
+          v-for="tab in panelTabs"
+          :key="tab"
+          type="button"
+          class="rounded border px-3 py-2 font-bold capitalize transition"
+          :class="currentPanel === tab ? 'border-[#bd5d38] bg-[#f2d8c8] text-[#17221d]' : 'border-[#d8cdbd] bg-[#f9f7f0] text-[#526057] hover:border-[#bd5d38]'"
+          @click="currentPanel = tab"
+        >
+          {{ tab }}
+        </button>
+      </div>
+
+      <div class="mt-5 max-w-[520px]">
+        <component :is="currentDynamicComponent" />
       </div>
     </section>
 
