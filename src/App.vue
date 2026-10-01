@@ -5,6 +5,9 @@ import LessonCard from './components/LessonCard.vue'
 import TodoFilter from './components/TodoFilter.vue'
 import TodoItem from './components/TodoItem.vue'
 import UserCard from './components/UserCard.vue'
+import IntroPanel from './components/IntroPanel.vue'
+import SkillsPanel from './components/SkillsPanel.vue'
+import ResultPanel from './components/ResultPanel.vue'
 
 const STORAGE_KEY = 'vue-beginner-todos'
 const route = useRoute()
@@ -54,40 +57,9 @@ const focusInputMessage = ref('Click the button to focus the input.')
 const panelTabs = ['intro', 'skills', 'result']
 const currentPanel = ref('intro')
 const dynamicPanel = {
-  intro: {
-    name: 'IntroPanel',
-    template: `
-      <div class="rounded border border-[#d8cdbd] bg-[#fffdf8] p-4">
-        <p class="text-sm font-bold uppercase tracking-[0.12em] text-[#bd5d38]">Intro</p>
-        <h3 class="mt-2 font-display text-2xl text-[#17221d]">This is the first panel</h3>
-        <p class="mt-2 text-[#68756c]">Vue can switch the whole component body without reloading the page.</p>
-      </div>
-    `,
-  },
-  skills: {
-    name: 'SkillsPanel',
-    template: `
-      <div class="rounded border border-[#d8cdbd] bg-[#edf3e8] p-4">
-        <p class="text-sm font-bold uppercase tracking-[0.12em] text-[#bd5d38]">Skills</p>
-        <ul class="mt-3 space-y-2 text-[#526057]">
-          <li>• v-model</li>
-          <li>• computed()</li>
-          <li>• watch()</li>
-          <li>• ref()</li>
-        </ul>
-      </div>
-    `,
-  },
-  result: {
-    name: 'ResultPanel',
-    template: `
-      <div class="rounded border border-[#d8cdbd] bg-[#f4e9d8] p-4">
-        <p class="text-sm font-bold uppercase tracking-[0.12em] text-[#bd5d38]">Result</p>
-        <h3 class="mt-2 font-display text-2xl text-[#17221d]">Learning becomes easier</h3>
-        <p class="mt-2 text-[#68756c]">Dynamic components let you show different UI states in one place.</p>
-      </div>
-    `,
-  },
+  intro: IntroPanel,
+  skills: SkillsPanel,
+  result: ResultPanel,
 }
 let timerId = null
 
