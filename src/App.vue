@@ -56,6 +56,7 @@ const focusInputValue = ref('')
 const focusInputMessage = ref('Click the button to focus the input.')
 const panelTabs = ['intro', 'skills', 'result']
 const currentPanel = ref('intro')
+const currentCachedPanel = ref('intro')
 const dynamicPanel = {
   intro: IntroPanel,
   skills: SkillsPanel,
@@ -207,6 +208,7 @@ function focusInputField() {
 }
 
 const currentDynamicComponent = computed(() => dynamicPanel[currentPanel.value])
+const currentCachedComponent = computed(() => dynamicPanel[currentCachedPanel.value])
 </script>
 
 <template>
@@ -535,7 +537,7 @@ const currentDynamicComponent = computed(() => dynamicPanel[currentPanel.value])
           :key="tab"
           type="button"
           class="rounded border px-3 py-2 font-bold capitalize transition"
-          :class="currentPanel === tab ? 'border-[#bd5d38] bg-[#f2d8c8] text-[#17221d]' : 'border-[#d8cdbd] bg-[#f9f7f0] text-[#526057] hover:border-[#bd5d38]'"
+          :class="currentPanel === tab ? 'border-[#bd5d38] bg-[#86a17e] text-[#17221d]' : 'border-[#b19e9e] bg-[#f1f0f9] text-[#526057] hover:border-[#bd5d38]'"
           @click="currentPanel = tab"
         >
           {{ tab }}
@@ -545,6 +547,35 @@ const currentDynamicComponent = computed(() => dynamicPanel[currentPanel.value])
       <div class="mt-5 max-w-[520px]">
         <component :is="currentDynamicComponent" />
       </div>
+    </section>
+
+    <section v-if="!isTodosPage" class="mx-auto mt-5 max-w-[980px] rounded-lg border border-[#d8d1c2] bg-[#e8eee3] p-7 shadow-[8px_8px_0_#ded5c4]" aria-labelledby="keep-alive-title">
+      <span class="mb-8 block text-xs font-bold uppercase tracking-[0.12em] text-[#bd5d38]">13</span>
+      <h2 id="keep-alive-title" class="font-display text-2xl font-semibold tracking-[-0.04em]">KeepAlive: preserve component state</h2>
+      <p class="mt-2 leading-relaxed text-[#68756c]">
+        Normally, switching away from a component removes it. <code class="rounded bg-[#f1e6d5] px-1.5 py-0.5 font-mono text-[0.9em] text-[#8d462c]">KeepAlive</code>
+        caches it, so its counter is still there when you return.
+      </p>
+
+      <div class="mt-5 flex flex-wrap gap-2">
+        <button
+          v-for="tab in panelTabs"
+          :key="tab"
+          type="button"
+          class="rounded border px-3 py-2 font-bold capitalize transition"
+          :class="currentCachedPanel === tab ? 'border-[#bd5d38] bg-[#86a17e] text-[#17221d]' : 'border-[#b19e9e] bg-[#f1f0f9] text-[#526057] hover:border-[#bd5d38]'"
+          @click="currentCachedPanel = tab"
+        >
+          {{ tab }}
+        </button>
+      </div>
+
+      <div class="mt-5 max-w-[520px]">
+        <KeepAlive>
+          <component :is="currentCachedComponent" />
+        </KeepAlive>
+      </div>
+      <p class="mt-3 text-sm text-[#526057]">Click a panel's counter, switch tabs, then return. Its count should remain.</p>
     </section>
 
     <section v-if="!isTodosPage" class="mx-auto mt-5 max-w-[980px]" aria-labelledby="slots-title">
