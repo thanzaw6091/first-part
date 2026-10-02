@@ -55,8 +55,8 @@ const focusInputRef = ref(null)
 const focusInputValue = ref('')
 const focusInputMessage = ref('Click the button to focus the input.')
 const panelTabs = ['intro', 'skills', 'result']
-const currentPanel = ref('intro')
 const currentCachedPanel = ref('intro')
+const showTransitionMessage = ref(true)
 const dynamicPanel = {
   intro: IntroPanel,
   skills: SkillsPanel,
@@ -207,7 +207,6 @@ function focusInputField() {
   focusInputMessage.value = 'The input is focused through a template ref.'
 }
 
-const currentDynamicComponent = computed(() => dynamicPanel[currentPanel.value])
 const currentCachedComponent = computed(() => dynamicPanel[currentCachedPanel.value])
 </script>
 
@@ -524,33 +523,8 @@ const currentCachedComponent = computed(() => dynamicPanel[currentCachedPanel.va
       </div>
     </section>
 
-    <section v-if="!isTodosPage" class="mx-auto mt-5 max-w-[980px] rounded-lg border border-[#d8d1c2] bg-[#f6efe8] p-7 shadow-[8px_8px_0_#ded5c4]" aria-labelledby="dynamic-component-title">
-      <span class="mb-8 block text-xs font-bold uppercase tracking-[0.12em] text-[#bd5d38]">12</span>
-      <h2 id="dynamic-component-title" class="font-display text-2xl font-semibold tracking-[-0.04em]">Dynamic components</h2>
-      <p class="mt-2 leading-relaxed text-[#68756c]">
-        With <code class="rounded bg-[#f1e6d5] px-1.5 py-0.5 font-mono text-[0.9em] text-[#8d462c]">:is</code>, Vue can swap one component for another based on a value.
-      </p>
-
-      <div class="mt-5 flex flex-wrap gap-2">
-        <button
-          v-for="tab in panelTabs"
-          :key="tab"
-          type="button"
-          class="rounded border px-3 py-2 font-bold capitalize transition"
-          :class="currentPanel === tab ? 'border-[#bd5d38] bg-[#86a17e] text-[#17221d]' : 'border-[#b19e9e] bg-[#f1f0f9] text-[#526057] hover:border-[#bd5d38]'"
-          @click="currentPanel = tab"
-        >
-          {{ tab }}
-        </button>
-      </div>
-
-      <div class="mt-5 max-w-[520px]">
-        <component :is="currentDynamicComponent" />
-      </div>
-    </section>
-
     <section v-if="!isTodosPage" class="mx-auto mt-5 max-w-[980px] rounded-lg border border-[#d8d1c2] bg-[#e8eee3] p-7 shadow-[8px_8px_0_#ded5c4]" aria-labelledby="keep-alive-title">
-      <span class="mb-8 block text-xs font-bold uppercase tracking-[0.12em] text-[#bd5d38]">13</span>
+      <span class="mb-8 block text-xs font-bold uppercase tracking-[0.12em] text-[#bd5d38]">12</span>
       <h2 id="keep-alive-title" class="font-display text-2xl font-semibold tracking-[-0.04em]">KeepAlive: preserve component state</h2>
       <p class="mt-2 leading-relaxed text-[#68756c]">
         Normally, switching away from a component removes it. <code class="rounded bg-[#f1e6d5] px-1.5 py-0.5 font-mono text-[0.9em] text-[#8d462c]">KeepAlive</code>
@@ -576,6 +550,38 @@ const currentCachedComponent = computed(() => dynamicPanel[currentCachedPanel.va
         </KeepAlive>
       </div>
       <p class="mt-3 text-sm text-[#526057]">Click a panel's counter, switch tabs, then return. Its count should remain.</p>
+    </section>
+
+    <section v-if="!isTodosPage" class="mx-auto mt-5 max-w-[980px] rounded-lg border border-[#d8d1c2] bg-[#f3e9dc] p-7 shadow-[8px_8px_0_#ded5c4]" aria-labelledby="transition-title">
+      <span class="mb-8 block text-xs font-bold uppercase tracking-[0.12em] text-[#bd5d38]">13</span>
+      <h2 id="transition-title" class="font-display text-2xl font-semibold tracking-[-0.04em]">Transitions: animate show and hide</h2>
+      <p class="mt-2 leading-relaxed text-[#68756c]">
+        Vue's <code class="rounded bg-[#f1e6d5] px-1.5 py-0.5 font-mono text-[0.9em] text-[#8d462c]">Transition</code>
+        component adds classes while an element enters or leaves the page.
+      </p>
+
+      <button
+        class="mt-5 rounded bg-[#bd5d38] px-4 py-3 font-bold text-[#fffdf8] hover:bg-[#99462d]"
+        type="button"
+        @click="showTransitionMessage = !showTransitionMessage"
+      >
+        {{ showTransitionMessage ? 'Hide message' : 'Show message' }}
+      </button>
+
+      <div class="mt-5 min-h-24 max-w-[520px]">
+        <Transition
+          enter-active-class="transition-all duration-300 ease-out"
+          enter-from-class="translate-y-2 opacity-0"
+          enter-to-class="translate-y-0 opacity-100"
+          leave-active-class="transition-all duration-200 ease-in"
+          leave-from-class="translate-y-0 opacity-100"
+          leave-to-class="-translate-y-2 opacity-0"
+        >
+          <p v-if="showTransitionMessage" class="rounded border border-[#d8cdbd] bg-[#fffdf8] p-4 text-[#526057]">
+            This message fades and moves when it appears or disappears.
+          </p>
+        </Transition>
+      </div>
     </section>
 
     <section v-if="!isTodosPage" class="mx-auto mt-5 max-w-[980px]" aria-labelledby="slots-title">
