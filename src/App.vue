@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, onUnmounted, onUpdated, ref, watch, watchEffect } from 'vue'
+import { computed, onMounted, onUnmounted, onUpdated, provide, ref, watch, watchEffect } from 'vue'
 import { RouterLink, RouterView, useRoute } from 'vue-router'
 import LessonCard from './components/LessonCard.vue'
 import TodoFilter from './components/TodoFilter.vue'
@@ -8,6 +8,7 @@ import UserCard from './components/UserCard.vue'
 import IntroPanel from './components/IntroPanel.vue'
 import SkillsPanel from './components/SkillsPanel.vue'
 import ResultPanel from './components/ResultPanel.vue'
+import ThemeDisplay from './components/ThemeDisplay.vue'
 
 const STORAGE_KEY = 'vue-beginner-todos'
 const route = useRoute()
@@ -57,11 +58,14 @@ const focusInputMessage = ref('Click the button to focus the input.')
 const panelTabs = ['intro', 'skills', 'result']
 const currentCachedPanel = ref('intro')
 const showTransitionMessage = ref(true)
+const showPortalMessage = ref(false)
+const appTheme = ref('day')
 const dynamicPanel = {
   intro: IntroPanel,
   skills: SkillsPanel,
   result: ResultPanel,
 }
+provide('themeMode', appTheme)
 let timerId = null
 
 onMounted(() => {
@@ -582,6 +586,75 @@ const currentCachedComponent = computed(() => dynamicPanel[currentCachedPanel.va
           </p>
         </Transition>
       </div>
+    </section>
+
+    <section v-if="!isTodosPage" class="mx-auto mt-5 max-w-[980px] rounded-lg border border-[#d8d1c2] bg-[#f0f5eb] p-7 shadow-[8px_8px_0_#ded5c4]" aria-labelledby="teleport-title">
+      <span class="mb-8 block text-xs font-bold uppercase tracking-[0.12em] text-[#bd5d38]">14</span>
+      <h2 id="teleport-title" class="font-display text-2xl font-semibold tracking-[-0.04em]">Teleport: move UI outside the component</h2>
+      <p class="mt-2 leading-relaxed text-[#68756c]">
+        A <code class="rounded bg-[#f1e6d5] px-1.5 py-0.5 font-mono text-[0.9em] text-[#8d462c]">Teleport</code>
+        sends content to another part of the DOM, which is useful for modals, popups, and toast messages.
+      </p>
+
+      <button
+        class="mt-5 rounded bg-[#bd5d38] px-4 py-3 font-bold text-[#fffdf8] hover:bg-[#99462d]"
+        type="button"
+        @click="showPortalMessage = !showPortalMessage"
+      >
+        {{ showPortalMessage ? 'Close toast' : 'Open toast' }}
+      </button>
+
+      <Teleport to="body">
+        <Transition
+          enter-active-class="transition duration-200 ease-out"
+          enter-from-class="opacity-0 translate-y-2"
+          enter-to-class="opacity-100 translate-y-0"
+          leave-active-class="transition duration-150 ease-in"
+          leave-from-class="opacity-100 translate-y-0"
+          leave-to-class="opacity-0 -translate-y-2"
+        >
+          <div
+            v-if="showPortalMessage"
+            class="fixed inset-x-4 top-5 z-50 mx-auto max-w-md rounded-lg border border-[#d8cdbd] bg-[#17221d] p-4 text-[#fffdf8] shadow-[0_16px_40px_rgba(23,34,29,0.25)]"
+          >
+            <p class="text-sm font-bold uppercase tracking-[0.12em] text-[#f2d8c8]">Portal message</p>
+            <p class="mt-2 text-sm leading-relaxed text-[#f8f1ea]">
+              This card is rendered outside the component tree, but it still stays connected to Vue state.
+            </p>
+          </div>
+        </Transition>
+      </Teleport>
+    </section>
+
+    <section v-if="!isTodosPage" class="mx-auto mt-5 max-w-[980px] rounded-lg border border-[#d8d1c2] bg-[#eef5ee] p-7 shadow-[8px_8px_0_#ded5c4]" aria-labelledby="provide-title">
+      <span class="mb-8 block text-xs font-bold uppercase tracking-[0.12em] text-[#bd5d38]">15</span>
+      <h2 id="provide-title" class="font-display text-2xl font-semibold tracking-[-0.04em]">Provide and inject: share state without prop drilling</h2>
+      <p class="mt-2 leading-relaxed text-[#68756c]">
+        When many nested components need the same value, <code class="rounded bg-[#f1e6d5] px-1.5 py-0.5 font-mono text-[0.9em] text-[#8d462c]">provide()</code>
+        can make it available, and <code class="rounded bg-[#f1e6d5] px-1.5 py-0.5 font-mono text-[0.9em] text-[#8d462c]">inject()</code>
+        lets a deeper component read it directly.
+      </p>
+
+      <div class="mt-5 flex flex-wrap gap-3">
+        <button
+          class="rounded border px-3 py-2 font-bold transition"
+          :class="appTheme === 'day' ? 'border-[#bd5d38] bg-[#f2d8c8] text-[#17221d]' : 'border-[#bfc8bd] bg-[#f9f7f0] text-[#526057] hover:border-[#bd5d38]'"
+          type="button"
+          @click="appTheme = 'day'"
+        >
+          Day mode
+        </button>
+        <button
+          class="rounded border px-3 py-2 font-bold transition"
+          :class="appTheme === 'night' ? 'border-[#bd5d38] bg-[#d2d9c3] text-[#17221d]' : 'border-[#bfc8bd] bg-[#f9f7f0] text-[#526057] hover:border-[#bd5d38]'"
+          type="button"
+          @click="appTheme = 'night'"
+        >
+          Night mode
+        </button>
+      </div>
+
+      <ThemeDisplay />
     </section>
 
     <section v-if="!isTodosPage" class="mx-auto mt-5 max-w-[980px]" aria-labelledby="slots-title">
