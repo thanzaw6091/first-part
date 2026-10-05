@@ -1,5 +1,17 @@
 <script setup>
-import { computed, onMounted, onUnmounted, onUpdated, provide, ref, watch, watchEffect } from 'vue'
+import {
+  computed,
+  defineComponent,
+  h,
+  onErrorCaptured,
+  onMounted,
+  onUnmounted,
+  onUpdated,
+  provide,
+  ref,
+  watch,
+  watchEffect,
+} from 'vue'
 import { RouterLink, RouterView, useRoute } from 'vue-router'
 import LessonCard from './components/LessonCard.vue'
 import TodoFilter from './components/TodoFilter.vue'
@@ -61,6 +73,10 @@ const showTransitionMessage = ref(true)
 const showPortalMessage = ref(false)
 const appTheme = ref('day')
 const highlightColor = ref('#bd5d38')
+const demoVisible = ref(false)
+const lessonStatus = ref('The message is hidden.')
+const dataLoaded = ref(false)
+const failedToLoad = ref(false)
 const dynamicPanel = {
   intro: IntroPanel,
   skills: SkillsPanel,
@@ -82,6 +98,22 @@ const vHighlight = {
     el.style.borderColor = binding.value || '#bd5d38'
   },
 }
+
+const AsyncLessonBlock = defineComponent({
+  async setup() {
+    await new Promise((resolve) => setTimeout(resolve, 2000))
+
+    return () =>
+      h(
+        'div',
+        {
+          class: 'mt-5 rounded border border-[#d8cdbd] bg-[#fffdf8] p-4 text-[#526057] shadow-[8px_8px_0_#ded5c4]',
+        },
+        'This content was loaded asynchronously. Suspense waits until it is ready and then shows the result.',
+      )
+  },
+})
+
 let timerId = null
 
 onMounted(() => {
@@ -697,6 +729,53 @@ const currentCachedComponent = computed(() => dynamicPanel[currentCachedPanel.va
       >
         This paragraph is styled by a custom directive, and the color updates with the button.
       </p>
+    </section>
+
+    <section v-if="!isTodosPage" class="mx-auto mt-5 max-w-[980px] rounded-lg border border-[#d8d1c2] bg-[#f7f1e6] p-7 shadow-[8px_8px_0_#ded5c4]" aria-labelledby="suspense-title">
+      <span class="mb-8 block text-xs font-bold uppercase tracking-[0.12em] text-[#bd5d38]">17</span>
+      <h2 id="suspense-title" class="font-display text-2xl font-semibold tracking-[-0.04em]">Suspense: load async content gracefully</h2>
+      <p class="mt-2 leading-relaxed text-[#68756c]">
+        <code class="rounded bg-[#f1e6d5] px-1.5 py-0.5 font-mono text-[0.9em] text-[#8d462c]">Suspense</code>
+        lets you show a fallback while async data or async components are still loading.
+      </p>
+
+      <Suspense>
+        <AsyncLessonBlock />
+        <template #fallback>
+          <div class="mt-5 rounded border border-[#d8cdbd] bg-[#f9f7f0] p-4 text-[#526057]">
+            Loading async lesson content...
+          </div>
+        </template>
+      </Suspense>
+    </section>
+
+    <section v-if="!isTodosPage" class="mx-auto mt-5 max-w-[980px] rounded-lg border border-[#d8d1c2] bg-[#f6efe8] p-7 shadow-[8px_8px_0_#ded5c4]" aria-labelledby="state-title">
+      <span class="mb-8 block text-xs font-bold uppercase tracking-[0.12em] text-[#bd5d38]">18</span>
+      <h2 id="state-title" class="font-display text-2xl font-semibold tracking-[-0.04em]">Error handling: show a fallback message</h2>
+      <p class="mt-2 leading-relaxed text-[#68756c]">
+        If loading fails, we do not show a blank page. Instead, we show a friendly message and keep the app usable.
+      </p>
+
+      <button
+        class="mt-5 rounded bg-[#bd5d38] px-4 py-3 font-bold text-[#fffdf8] hover:bg-[#99462d]"
+        type="button"
+        @click="dataLoaded = false; failedToLoad = !failedToLoad; lessonStatus = failedToLoad ? 'The load failed.' : 'Ready to try again.'"
+      >
+        {{ failedToLoad ? 'Try again' : 'Load data' }}
+      </button>
+
+      <div class="mt-5 max-w-[520px] rounded border border-[#d8cdbd] bg-[#fffdf8] p-4 text-[#526057]">
+        <p class="text-sm font-bold uppercase tracking-[0.12em] text-[#bd5d38]">Status</p>
+        <p class="mt-2 text-sm">{{ lessonStatus }}</p>
+      </div>
+
+      <div v-if="failedToLoad" class="mt-5 max-w-[520px] rounded border border-[#d8cdbd] bg-[#f2d8c8] p-4 text-[#17221d]">
+        Fallback UI: Something went wrong. Please try again later.
+      </div>
+
+      <div v-else class="mt-5 max-w-[520px] rounded border border-[#d8cdbd] bg-[#e8eee3] p-4 text-[#17221d]">
+        Data loaded successfully.
+      </div>
     </section>
 
     <section v-if="!isTodosPage" class="mx-auto mt-5 max-w-[980px]" aria-labelledby="slots-title">
