@@ -60,12 +60,28 @@ const currentCachedPanel = ref('intro')
 const showTransitionMessage = ref(true)
 const showPortalMessage = ref(false)
 const appTheme = ref('day')
+const highlightColor = ref('#bd5d38')
 const dynamicPanel = {
   intro: IntroPanel,
   skills: SkillsPanel,
   result: ResultPanel,
 }
 provide('themeMode', appTheme)
+const vHighlight = {
+  mounted(el, binding) {
+    el.style.backgroundColor = binding.value || '#f2d8c8'
+    el.style.borderColor = binding.value || '#bd5d38'
+    el.style.borderWidth = '1px'
+    el.style.borderStyle = 'solid'
+    el.style.borderRadius = '0.75rem'
+    el.style.padding = '0.875rem 1rem'
+    el.style.transition = 'all 0.2s ease'
+  },
+  updated(el, binding) {
+    el.style.backgroundColor = binding.value || '#f2d8c8'
+    el.style.borderColor = binding.value || '#bd5d38'
+  },
+}
 let timerId = null
 
 onMounted(() => {
@@ -655,6 +671,32 @@ const currentCachedComponent = computed(() => dynamicPanel[currentCachedPanel.va
       </div>
 
       <ThemeDisplay />
+    </section>
+
+    <section v-if="!isTodosPage" class="mx-auto mt-5 max-w-[980px] rounded-lg border border-[#d8d1c2] bg-[#f9f5ef] p-7 shadow-[8px_8px_0_#ded5c4]" aria-labelledby="directive-title">
+      <span class="mb-8 block text-xs font-bold uppercase tracking-[0.12em] text-[#bd5d38]">16</span>
+      <h2 id="directive-title" class="font-display text-2xl font-semibold tracking-[-0.04em]">Custom directives: reuse DOM behavior</h2>
+      <p class="mt-2 leading-relaxed text-[#68756c]">
+        A custom directive lets you attach reusable DOM logic to an element. It is useful for focus, animation, styling,
+        and behavior you want to repeat across many components.
+      </p>
+
+      <div class="mt-5 flex flex-wrap gap-3">
+        <button
+          class="rounded bg-[#bd5d38] px-4 py-3 font-bold text-[#fffdf8] hover:bg-[#99462d]"
+          type="button"
+          @click="highlightColor = highlightColor === '#bd5d38' ? '#86a17e' : '#bd5d38'"
+        >
+          Change accent
+        </button>
+      </div>
+
+      <p
+        v-highlight="highlightColor"
+        class="mt-5 max-w-[520px] text-[#526057]"
+      >
+        This paragraph is styled by a custom directive, and the color updates with the button.
+      </p>
     </section>
 
     <section v-if="!isTodosPage" class="mx-auto mt-5 max-w-[980px]" aria-labelledby="slots-title">
