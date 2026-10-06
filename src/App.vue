@@ -74,9 +74,14 @@ const showPortalMessage = ref(false)
 const appTheme = ref('day')
 const highlightColor = ref('#bd5d38')
 const demoVisible = ref(false)
-const lessonStatus = ref('The message is hidden.')
-const dataLoaded = ref(false)
-const failedToLoad = ref(false)
+// Lesson 18: real error handling
+const postData = ref(null)
+const postLoading = ref(false)
+const postError = ref('')
+const simulateBrokenUrl = ref(false)
+const postAttempts = ref(0)
+const widgetCrash = ref(false)
+const widgetError = ref('')
 const dynamicPanel = {
   intro: IntroPanel,
   skills: SkillsPanel,
@@ -113,6 +118,84 @@ const AsyncLessonBlock = defineComponent({
       )
   },
 })
+
+// A child component that really throws an error while rendering.
+const BuggyWidget = defineComponent({
+  name: 'BuggyWidget',
+  props: { crash: Boolean },
+  setup(props) {
+    return () => {
+      if (props.crash) {
+        throw new Error('BuggyWidget crashed while rendering.')
+      }
+      return h(
+        'p',
+        { class: 'rounded border border-[#d8cdbd] bg-[#e8eee3] p-4 text-[#17221d]' },
+        'Widget is working normally.',
+      )
+    }
+  },
+})
+
+// Error boundary: catch errors thrown by child components so the whole app does not break.
+onErrorCaptured((err, instance, info) => {
+  if (instance?.$options?.name === 'BuggyWidget') {
+    console.error('Captured component error:', err, info)
+    widgetError.value = err.message
+    return false // stop the error from going further up
+  }
+  return true
+})
+
+function resetWidget() {
+  widgetCrash.value = false
+  widgetError.value = ''
+}
+
+async function loadPost() {
+  postLoading.value = true
+  postError.value = ''
+  postData.value = null
+  postAttempts.value += 1
+
+  // Cancel the request if it takes longer than 5 seconds.
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), 5000)
+
+  const url = simulateBrokenUrl.value
+    ? 'https://jsonplaceholder.typicode.com/posts/999999'
+    : 'https://jsonplaceholder.typicode.com/posts/1'
+
+  try {
+    const response = await fetch(url, { signal: controller.signal })
+
+    // fetch() does NOT throw for 404 / 500, so we must check it ourselves.
+    if (!response.ok) {
+      throw new Error(`Server responded with ${response.status} ${response.statusText || ''}`.trim())
+    }
+
+    const data = await response.json()
+    if (!data || !data.title) {
+      throw new Error('The server returned unexpected data.')
+    }
+
+    postData.value = data
+  } catch (error) {
+    if (error.name === 'AbortError') {
+      postError.value = 'The request took too long and was cancelled. Please try again.'
+    } else if (!navigator.onLine) {
+      postError.value = 'You are offline. Check your internet connection.'
+    } else if (error instanceof TypeError) {
+      postError.value = 'Network error: could not reach the server.'
+    } else {
+      postError.value = error.message
+    }
+    console.error('loadPost failed:', error)
+  } finally {
+    clearTimeout(timeoutId)
+    postLoading.value = false
+  }
+}
 
 let timerId = null
 
@@ -327,7 +410,7 @@ const currentCachedComponent = computed(() => dynamicPanel[currentCachedPanel.va
         <p class="mt-5 text-sm leading-relaxed text-[#68756c]" aria-live="polite">{{ progressMessage }}</p>
       </article>
     </section>
-    
+
     <section class="mx-auto mt-5 max-w-[980px] rounded-lg border border-[#d8d1c2] bg-[#fffdf8] p-7 shadow-[8px_8px_0_#ded5c4]" aria-labelledby="todo-title">
       <div class="flex flex-wrap items-end justify-between gap-3">
         <div>
@@ -368,7 +451,7 @@ const currentCachedComponent = computed(() => dynamicPanel[currentCachedPanel.va
 
       <ul class="mt-5 divide-y divide-[#e7e0d2]">
         <li v-for="todo in todos" :key="todo.id" class="flex items-center gap-3 py-3">
-          
+
           <input v-model="todo.completed" class="h-4 w-4 accent-[#bd5d38]" type="checkbox" :aria-label="`Complete ${todo.text}`" />
           <span :class="todo.completed ? 'text-[#9aa39b] line-through' : 'text-[#526057]'" class="flex-1">
             {{ todo.text }}
@@ -751,30 +834,79 @@ const currentCachedComponent = computed(() => dynamicPanel[currentCachedPanel.va
 
     <section v-if="!isTodosPage" class="mx-auto mt-5 max-w-[980px] rounded-lg border border-[#d8d1c2] bg-[#f6efe8] p-7 shadow-[8px_8px_0_#ded5c4]" aria-labelledby="state-title">
       <span class="mb-8 block text-xs font-bold uppercase tracking-[0.12em] text-[#bd5d38]">18</span>
-      <h2 id="state-title" class="font-display text-2xl font-semibold tracking-[-0.04em]">Error handling: show a fallback message</h2>
+      <h2 id="state-title" class="font-display text-2xl font-semibold tracking-[-0.04em]">Error handling: real requests and crashing components</h2>
       <p class="mt-2 leading-relaxed text-[#68756c]">
-        If loading fails, we do not show a blank page. Instead, we show a friendly message and keep the app usable.
+        Real apps fail: servers return 404, the network drops, requests hang. We use
+        <code class="rounded bg-[#f1e6d5] px-1.5 py-0.5 font-mono text-[0.9em] text-[#8d462c]">try / catch / finally</code>
+        for async code and
+        <code class="rounded bg-[#f1e6d5] px-1.5 py-0.5 font-mono text-[0.9em] text-[#8d462c]">onErrorCaptured()</code>
+        to catch errors from child components.
       </p>
 
+      <!-- Part A: API request error handling -->
+      <h3 class="mt-6 font-display text-xl font-semibold">A. Fetch with error handling</h3>
+      <label class="mt-3 flex items-center gap-2 text-sm font-bold text-[#526057]">
+        <input v-model="simulateBrokenUrl" class="h-4 w-4 accent-[#bd5d38]" type="checkbox" />
+        Use a broken URL (server returns 404)
+      </label>
+      <p class="mt-1 text-xs text-[#68756c]">Tip: turn off your Wi-Fi (or use DevTools → Network → Offline) to test a network error.</p>
+
       <button
-        class="mt-5 rounded bg-[#bd5d38] px-4 py-3 font-bold text-[#fffdf8] hover:bg-[#99462d]"
+        class="mt-4 rounded bg-[#bd5d38] px-4 py-3 font-bold text-[#fffdf8] hover:bg-[#99462d] disabled:cursor-not-allowed disabled:opacity-60"
         type="button"
-        @click="dataLoaded = false; failedToLoad = !failedToLoad; lessonStatus = failedToLoad ? 'The load failed.' : 'Ready to try again.'"
+        :disabled="postLoading"
+        @click="loadPost"
       >
-        {{ failedToLoad ? 'Try again' : 'Load data' }}
+        {{ postLoading ? 'Loading...' : postError ? 'Try again' : 'Load post' }}
       </button>
+      <span class="ml-3 text-sm text-[#68756c]">Attempts: {{ postAttempts }}</span>
 
-      <div class="mt-5 max-w-[520px] rounded border border-[#d8cdbd] bg-[#fffdf8] p-4 text-[#526057]">
-        <p class="text-sm font-bold uppercase tracking-[0.12em] text-[#bd5d38]">Status</p>
-        <p class="mt-2 text-sm">{{ lessonStatus }}</p>
+      <div class="mt-5 max-w-[520px]" aria-live="polite">
+        <p v-if="postLoading" class="rounded border border-[#d8cdbd] bg-[#fffdf8] p-4 text-[#526057]" role="status">
+          Loading post from the server...
+        </p>
+
+        <div v-else-if="postError" class="rounded border border-[#d8cdbd] bg-[#f2d8c8] p-4 text-[#17221d]" role="alert">
+          <p class="text-sm font-bold uppercase tracking-[0.12em] text-[#a3482c]">Something went wrong</p>
+          <p class="mt-2 text-sm">{{ postError }}</p>
+        </div>
+
+        <div v-else-if="postData" class="rounded border border-[#d8cdbd] bg-[#e8eee3] p-4 text-[#17221d]">
+          <p class="text-sm font-bold uppercase tracking-[0.12em] text-[#bd5d38]">Post #{{ postData.id }}</p>
+          <strong class="mt-2 block">{{ postData.title }}</strong>
+          <p class="mt-2 text-sm text-[#526057]">{{ postData.body }}</p>
+        </div>
+
+        <p v-else class="rounded border border-[#d8cdbd] bg-[#fffdf8] p-4 text-[#526057]">
+          Nothing loaded yet. Click "Load post".
+        </p>
       </div>
 
-      <div v-if="failedToLoad" class="mt-5 max-w-[520px] rounded border border-[#d8cdbd] bg-[#f2d8c8] p-4 text-[#17221d]">
-        Fallback UI: Something went wrong. Please try again later.
+      <!-- Part B: component error boundary -->
+      <h3 class="mt-8 font-display text-xl font-semibold">B. Catch a crashing component</h3>
+      <div class="mt-3 flex flex-wrap gap-3">
+        <button
+          class="rounded bg-[#bd5d38] px-4 py-3 font-bold text-[#fffdf8] hover:bg-[#99462d]"
+          type="button"
+          @click="widgetCrash = true"
+        >
+          Break the widget
+        </button>
+        <button
+          class="rounded border border-[#aebda9] bg-transparent px-4 py-3 text-[#526057]"
+          type="button"
+          @click="resetWidget"
+        >
+          Reset widget
+        </button>
       </div>
 
-      <div v-else class="mt-5 max-w-[520px] rounded border border-[#d8cdbd] bg-[#e8eee3] p-4 text-[#17221d]">
-        Data loaded successfully.
+      <div class="mt-5 max-w-[520px]">
+        <div v-if="widgetError" class="rounded border border-[#d8cdbd] bg-[#f2d8c8] p-4 text-[#17221d]" role="alert">
+          <p class="text-sm font-bold">Fallback UI: this widget failed, but the rest of the page still works.</p>
+          <p class="mt-1 font-mono text-xs text-[#8d462c]">{{ widgetError }}</p>
+        </div>
+        <BuggyWidget v-else :crash="widgetCrash" />
       </div>
     </section>
 
