@@ -21,6 +21,8 @@ import IntroPanel from './components/IntroPanel.vue'
 import SkillsPanel from './components/SkillsPanel.vue'
 import ResultPanel from './components/ResultPanel.vue'
 import ThemeDisplay from './components/ThemeDisplay.vue'
+import SearchBox from './components/SearchBox.vue'
+import { useSearch } from './composables/useSearch'
 
 const STORAGE_KEY = 'vue-beginner-todos'
 const route = useRoute()
@@ -82,6 +84,19 @@ const simulateBrokenUrl = ref(false)
 const postAttempts = ref(0)
 const widgetCrash = ref(false)
 const widgetError = ref('')
+// Lesson 19: a real, reusable search feature built from a composable.
+const lessonTopics = ref([
+  { id: 1, title: 'Template syntax', tag: 'basics' },
+  { id: 2, title: 'Reactive state with ref()', tag: 'basics' },
+  { id: 3, title: 'Computed values', tag: 'reactivity' },
+  { id: 4, title: 'Handling events', tag: 'basics' },
+  { id: 5, title: 'Forms and v-model', tag: 'forms' },
+  { id: 6, title: 'Fetching data from an API', tag: 'async' },
+  { id: 7, title: 'Error handling', tag: 'async' },
+  { id: 8, title: 'Parent and child props', tag: 'components' },
+])
+const { query: topicQuery, results: matchingTopics, reset: resetTopicSearch } =
+  useSearch(lessonTopics, (topic) => `${topic.title} ${topic.tag}`)
 const dynamicPanel = {
   intro: IntroPanel,
   skills: SkillsPanel,
@@ -908,6 +923,52 @@ const currentCachedComponent = computed(() => dynamicPanel[currentCachedPanel.va
         </div>
         <BuggyWidget v-else :crash="widgetCrash" />
       </div>
+    </section>
+
+    <section v-if="!isTodosPage" class="mx-auto mt-5 max-w-[980px] rounded-lg border border-[#d8d1c2] bg-[#f7f1e6] p-7 shadow-[8px_8px_0_#ded5c4]" aria-labelledby="search-title">
+      <span class="mb-8 block text-xs font-bold uppercase tracking-[0.12em] text-[#bd5d38]">19</span>
+      <h2 id="search-title" class="font-display text-2xl font-semibold tracking-[-0.04em]">A real search feature with a composable</h2>
+      <p class="mt-2 max-w-[620px] leading-relaxed text-[#68756c]">
+        A <code class="rounded bg-[#f1e6d5] px-1.5 py-0.5 font-mono text-[0.9em] text-[#8d462c]">composable</code>
+        is a plain function that returns reactive values, so the same logic can be reused in many components. Here
+        <code class="rounded bg-[#f1e6d5] px-1.5 py-0.5 font-mono text-[0.9em] text-[#8d462c]">useSearch()</code>
+        filters a real list as you type.
+      </p>
+
+      <div class="mt-5 max-w-[520px]">
+        <label class="mb-2 block text-sm font-bold text-[#526057]" for="topic-search">Search lessons</label>
+        <SearchBox
+          id="topic-search"
+          v-model="topicQuery"
+          placeholder="Try typing 'async' or 'forms'"
+        />
+      </div>
+
+      <p class="mt-4 text-sm text-[#68756c]" aria-live="polite">
+        Showing <strong>{{ matchingTopics.length }}</strong> of {{ lessonTopics.length }} lessons.
+      </p>
+
+      <ul v-if="matchingTopics.length" class="mt-3 max-w-[520px] divide-y divide-[#e7e0d2]">
+        <li v-for="topic in matchingTopics" :key="topic.id" class="flex items-center justify-between gap-3 py-3">
+          <span class="text-[#526057]">{{ topic.title }}</span>
+          <span class="rounded bg-[#f1e6d5] px-2 py-0.5 font-mono text-xs text-[#8d462c]">{{ topic.tag }}</span>
+        </li>
+      </ul>
+      <p v-else class="mt-3 text-[#68756c]" role="status">No lessons match your search.</p>
+
+      <button
+        v-if="topicQuery"
+        class="mt-4 text-sm font-bold text-[#bd5d38] hover:text-[#99462d]"
+        type="button"
+        @click="resetTopicSearch"
+      >
+        Reset search
+      </button>
+
+      <p class="mt-4 text-sm text-[#68756c]">
+        Try it yourself: edit <code class="rounded bg-[#f1e6d5] px-1.5 py-0.5 font-mono text-[0.9em] text-[#8d462c]">src/composables/useSearch.js</code>
+        and watch the list update.
+      </p>
     </section>
 
     <section v-if="!isTodosPage" class="mx-auto mt-5 max-w-[980px]" aria-labelledby="slots-title">
