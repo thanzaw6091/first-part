@@ -8,7 +8,9 @@ import {
   onUnmounted,
   onUpdated,
   provide,
+  reactive,
   ref,
+  toRefs,
   watch,
   watchEffect,
 } from 'vue'
@@ -94,9 +96,22 @@ const lessonTopics = ref([
   { id: 6, title: 'Fetching data from an API', tag: 'async' },
   { id: 7, title: 'Error handling', tag: 'async' },
   { id: 8, title: 'Parent and child props', tag: 'components' },
+  { id: 9, title: 'reactive() and toRefs()', tag: 'reactivity' },
 ])
 const { query: topicQuery, results: matchingTopics, reset: resetTopicSearch } =
   useSearch(lessonTopics, (topic) => `${topic.title} ${topic.tag}`)
+
+// Lesson 20: reactive() makes one object reactive, and toRefs() turns each
+// property into a ref you can safely destructure without losing reactivity.
+const profile = reactive({
+  name: 'Vue learner',
+  role: 'Frontend beginner',
+  hours: 0,
+})
+// Destructuring `profile` directly would break reactivity for the plain values.
+// These refs stay connected to the object above, so both views update together.
+const { name: profileName, role: profileRole, hours: profileHours } = toRefs(profile)
+const isProfileEmpty = computed(() => !profileName.value.trim() && !profileRole.value.trim())
 const dynamicPanel = {
   intro: IntroPanel,
   skills: SkillsPanel,
@@ -968,6 +983,93 @@ const currentCachedComponent = computed(() => dynamicPanel[currentCachedPanel.va
       <p class="mt-4 text-sm text-[#68756c]">
         Try it yourself: edit <code class="rounded bg-[#f1e6d5] px-1.5 py-0.5 font-mono text-[0.9em] text-[#8d462c]">src/composables/useSearch.js</code>
         and watch the list update.
+      </p>
+    </section>
+
+    <section v-if="!isTodosPage" class="mx-auto mt-5 max-w-[980px] rounded-lg border border-[#d8d1c2] bg-[#eef5ee] p-7 shadow-[8px_8px_0_#ded5c4]" aria-labelledby="reactive-title">
+      <span class="mb-8 block text-xs font-bold uppercase tracking-[0.12em] text-[#bd5d38]">20</span>
+      <h2 id="reactive-title" class="font-display text-2xl font-semibold tracking-[-0.04em]">
+        reactive() and toRefs(): object state
+      </h2>
+      <p class="mt-2 max-w-[620px] leading-relaxed text-[#68756c]">
+        Every lesson so far used
+        <code class="rounded bg-[#f1e6d5] px-1.5 py-0.5 font-mono text-[0.9em] text-[#8d462c]">ref()</code>
+        for one value. When several values belong together,<br />
+        <code class="rounded bg-[#f1e6d5] px-1.5 py-0.5 font-mono text-[0.9em] text-[#8d462c]">reactive()</code>
+        wraps a whole object in reactivity, and
+        <code class="rounded bg-[#f1e6d5] px-1.5 py-0.5 font-mono text-[0.9em] text-[#8d462c]">toRefs()</code>
+        lets you destructure it without losing reactivity.
+      </p>
+
+      <div class="mt-6 grid gap-6 md:grid-cols-2">
+        <div class="rounded border border-[#d8cdbd] bg-[#fffdf8] p-4">
+          <h3 class="font-display text-xl font-semibold">The reactive object</h3>
+          <p class="mt-1 text-sm text-[#68756c]">
+            Edit these fields and watch the panel on the right update too.
+          </p>
+
+          <label class="mt-4 block text-sm font-bold text-[#526057]" for="profile-name">Name</label>
+          <input
+            id="profile-name"
+            v-model="profile.name"
+            class="mt-2 w-full rounded border border-[#bfc8bd] bg-[#f9f7f0] px-3.5 py-3 text-[#17221d] outline-none focus:border-[#bd5d38] focus:ring-4 focus:ring-[#f2d8c8]"
+            type="text"
+          />
+
+          <label class="mt-4 block text-sm font-bold text-[#526057]" for="profile-role">Role</label>
+          <input
+            id="profile-role"
+            v-model="profile.role"
+            class="mt-2 w-full rounded border border-[#bfc8bd] bg-[#f9f7f0] px-3.5 py-3 text-[#17221d] outline-none focus:border-[#bd5d38] focus:ring-4 focus:ring-[#f2d8c8]"
+            type="text"
+          />
+
+          <label class="mt-4 block text-sm font-bold text-[#526057]" for="profile-hours">Study hours</label>
+          <input
+            id="profile-hours"
+            v-model.number="profile.hours"
+            class="mt-2 w-full rounded border border-[#bfc8bd] bg-[#f9f7f0] px-3.5 py-3 text-[#17221d] outline-none focus:border-[#bd5d38] focus:ring-4 focus:ring-[#f2d8c8]"
+            type="number"
+            min="0"
+          />
+
+          <button
+            class="mt-4 rounded bg-[#bd5d38] px-4 py-3 font-bold text-[#fffdf8] hover:bg-[#99462d]"
+            type="button"
+            @click="profile.hours += 1"
+          >
+            Add one hour
+          </button>
+        </div>
+
+        <div class="rounded border border-[#d8cdbd] bg-[#fffdf8] p-4">
+          <h3 class="font-display text-xl font-semibold">Read through toRefs()</h3>
+          <p class="mt-1 text-sm text-[#68756c]">
+            These lines use the destructured refs, not the object directly.
+          </p>
+
+          <div class="mt-4 space-y-2 rounded bg-[#f9f7f0] p-3 text-[#17221d]">
+            <p>Name: <strong>{{ profileName }}</strong></p>
+            <p>Role: <strong>{{ profileRole }}</strong></p>
+            <p>Hours: <strong>{{ profileHours }}</strong></p>
+          </div>
+
+          <p v-if="isProfileEmpty" class="mt-4 text-sm font-bold text-[#a3482c]" role="alert">
+            Add a name or a role so the profile is not empty.
+          </p>
+          <p v-else class="mt-4 text-sm text-[#526057]">
+            The refs and the object always show the same values, because they share one source.
+          </p>
+
+          <pre class="mt-4 overflow-x-auto rounded bg-[#17221d] p-3 font-mono text-xs leading-relaxed text-[#f8f1ea]">const profile = reactive({ name: '', role: '', hours: 0 })
+const { name, role, hours } = toRefs(profile)</pre>
+        </div>
+      </div>
+
+      <p class="mt-5 max-w-[620px] text-sm leading-relaxed text-[#68756c]">
+        Try this: remove <code class="rounded bg-[#f1e6d5] px-1.5 py-0.5 font-mono text-[0.9em] text-[#8d462c]">toRefs()</code>
+        and destructure the object plainly instead. Typing in the left panel stops updating the right panel,
+        because a plain destructured value is only a one-time copy.
       </p>
     </section>
 
