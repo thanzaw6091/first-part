@@ -1,10 +1,18 @@
 import { useState } from 'react'
 import Lesson1 from './lessons/Lesson1'
 import Lesson2 from './lessons/Lesson2'
+import Lesson3 from './lessons/Lesson3'
+import Lesson4 from './lessons/Lesson4'
+import Lesson5 from './lessons/Lesson5'
+import Lesson6 from './lessons/Lesson6'
 
 const lessons = [
   { id: 1, title: 'Components & JSX (အပိုင်း ၁ - အခြေခံများ)', component: Lesson1 },
   { id: 2, title: 'State & Events (အပိုင်း ၂ - အပြန်အလှန် တုံ့ပြန်မှုများ)', component: Lesson2 },
+  { id: 3, title: 'useEffect (အပိုအလုပ်များ လုပ်ဆောင်ခြင်း)', component: Lesson3 },
+  { id: 4, title: 'Lifting State Up (State ကို မိဘ component ဆီ ရွှေ့တင်ခြင်း)', component: Lesson4 },
+  { id: 5, title: 'Data ခေါ်ခြင်း (Fetching Data)', component: Lesson5 },
+  { id: 6, title: 'Form ကိုင်တွယ်ခြင်း (Sign up form နဲ့ Validation)', component: Lesson6 },
 ]
 
 function App() {
