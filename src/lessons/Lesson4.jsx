@@ -54,7 +54,7 @@ function Shop() {
 // ---------- အောက်က ကုဒ်တွေက နမူနာကို တကယ်ပြဖို့ပါ ----------
 
 function ProductList({ onAdd }) {
-  const products = ['ပန်းသီး', 'ငှက်ပျောသီး', 'လိမ္မော်သီး'];
+  const products = ['ပန်းသီး', 'ငှက်ပျောသီး', 'လိမ္မော်သီး', 'သရက်သီး'];
 
   return (
     <div className="flex flex-wrap gap-2">

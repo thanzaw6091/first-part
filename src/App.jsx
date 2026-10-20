@@ -5,6 +5,10 @@ import Lesson3 from './lessons/Lesson3'
 import Lesson4 from './lessons/Lesson4'
 import Lesson5 from './lessons/Lesson5'
 import Lesson6 from './lessons/Lesson6'
+import Lesson7 from './lessons/Lesson7'
+import Lesson8 from './lessons/Lesson8'
+import Lesson9 from './lessons/Lesson9'
+import Lesson10 from './lessons/Lesson10'
 
 const lessons = [
   { id: 1, title: 'Components & JSX (အပိုင်း ၁ - အခြေခံများ)', component: Lesson1 },
@@ -13,6 +17,10 @@ const lessons = [
   { id: 4, title: 'Lifting State Up (State ကို မိဘ component ဆီ ရွှေ့တင်ခြင်း)', component: Lesson4 },
   { id: 5, title: 'Data ခေါ်ခြင်း (Fetching Data)', component: Lesson5 },
   { id: 6, title: 'Form ကိုင်တွယ်ခြင်း (Sign up form နဲ့ Validation)', component: Lesson6 },
+  { id: 7, title: 'စာရင်းကို ရှာဖွေခြင်း (Search & Filter)', component: Lesson7 },
+  { id: 8, title: 'Context (Dark Mode ခလုတ်)', component: Lesson8 },
+  { id: 9, title: 'Custom Hook (ကိုယ်ပိုင် Hook ရေးခြင်း)', component: Lesson9 },
+  { id: 10, title: 'useRef (Input ကို ကိုယ်တိုင် ထိန်းချုပ်ခြင်း)', component: Lesson10 },
 ]
 
 function App() {
