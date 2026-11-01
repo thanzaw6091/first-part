@@ -9,6 +9,11 @@ import Lesson7 from './lessons/Lesson7'
 import Lesson8 from './lessons/Lesson8'
 import Lesson9 from './lessons/Lesson9'
 import Lesson10 from './lessons/Lesson10'
+import Lesson11 from './lessons/Lesson11'
+import Lesson12 from './lessons/Lesson12'
+import Lesson13 from './lessons/Lesson13'
+import Lesson14 from './lessons/Lesson14'
+import Lesson15 from './lessons/Lesson15'
 
 const lessons = [
   { id: 1, title: 'Components & JSX (အပိုင်း ၁ - အခြေခံများ)', component: Lesson1 },
@@ -21,6 +26,11 @@ const lessons = [
   { id: 8, title: 'Context (Dark Mode ခလုတ်)', component: Lesson8 },
   { id: 9, title: 'Custom Hook (ကိုယ်ပိုင် Hook ရေးခြင်း)', component: Lesson9 },
   { id: 10, title: 'useRef (Input ကို ကိုယ်တိုင် ထိန်းချုပ်ခြင်း)', component: Lesson10 },
+  { id: 11, title: 'useReducer (State ကို စနစ်တကျ စီမံခြင်း)', component: Lesson11 },
+  { id: 12, title: 'useMemo (တွက်ချက်ထားတဲ့ ရလဒ်ကို မှတ်ထားခြင်း)', component: Lesson12 },
+  { id: 13, title: 'React.memo (မလိုအပ်တဲ့ render ကို လျှော့ခြင်း)', component: Lesson13 },
+  { id: 14, title: 'useCallback (Function ကို မှတ်ထားခြင်း)', component: Lesson14 },
+  { id: 15, title: 'React Router (စာမျက်နှာများအကြား သွားလာခြင်း)', component: Lesson15 },
 ]
 
 function App() {
